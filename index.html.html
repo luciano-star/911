@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js"></script>
+
+<script>
+  // Pega aquí tu configuración personalizada de Firebase
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    databaseURL: "https://TU_PROYECTO.firebaseio.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "XXXXXXX",
+    appId: "XXXXXXXXXXXXXXXXX"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+</script>
+>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>911 | C5 - CENTRAL CALL</title>
