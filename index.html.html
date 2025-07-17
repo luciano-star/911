@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>911 | C5 - CENTRAL CALL</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d1117;
+      color: white;
+      overflow: hidden;
+    }
+    header {
+      background-color: #0d6efd;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+    .menu {
+      background-color: #161b22;
+      padding: 1rem;
+      width: 250px;
+      box-shadow: inset -1px 0 0 #30363d;
+    }
+    .menu h2 {
+      font-size: 1rem;
+      margin-top: 0;
+    }
+    .menu button {
+      display: block;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      width: 100%;
+      border: none;
+      background-color: #21262d;
+      color: white;
+      cursor: pointer;
+    }
+    .map-area {
+      flex-grow: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .map-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .note-area {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: rgba(13, 17, 23, 0.9);
+      width: 300px;
+      max-height: 300px;
+      transition: transform 0.3s ease;
+    }
+    .note-area.collapsed {
+      transform: translateY(90%);
+    }
+    .note-toggle {
+      background-color: #21262d;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 0.5rem;
+      cursor: pointer;
+      text-align: left;
+    }
+    .note-area textarea {
+      width: 100%;
+      height: 200px;
+      background-color: #0d1117;
+      color: white;
+      border: 1px solid #30363d;
+      resize: none;
+    }
+    .marker {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0d1117;
+      color: white;
+      padding: 1rem;
+      border: 1px solid #30363d;
+      display: none;
+      z-index: 9999;
+      width: 320px;
+      box-sizing: border-box;
+      border-radius: 5px;
+    }
+    .modal textarea {
+      width: 100%;
+      height: 80px;
+      background-color: #0d1117;
+      color: white;
+      border: 1px solid #30363d;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+    .modal-buttons button {
+      flex: 1;
+      margin: 0 0.25rem;
+      padding: 0.5rem;
+      background-color: #21262d;
+      color: white;
+      border: 1px solid #30363d;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    #loginBox {
+      background: #0d1117;
+      padding: 2rem;
+      border: 1px solid #30363d;
+      width: 300px;
+      box-sizing: border-box;
+      text-align: center;
+      border-radius: 5px;
+    }
+    #loginBox h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: normal;
+    }
+    #userInput {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1.1rem;
+      border: 1px solid #30363d;
+      background-color: #0d1117;
+      color: white;
+      box-sizing: border-box;
+      border-radius: 3px;
+      outline: none;
+    }
+    #userInput::placeholder {
+      color: #888;
+    }
+    #loginBtn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1.1rem;
+      background-color: #0d6efd;
+      border: none;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+      border-radius: 3px;
+    }
+    #loginBtn:disabled {
+      background-color: #3b7ddd;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal Login -->
+  <div id="loginModal">
+    <div id="loginBox">
+      <h2>Ingrese su usuario</h2>
+      <input id="userInput" type="text" placeholder="Usuario o código" autocomplete="off" />
+      <button id="loginBtn" disabled>Entrar</button>
+    </div>
+  </div>
+
+  <header id="headerTitle">911 | C5 - CENTRAL CALL</header>
+
+  <div class="container" id="mainContent" style="display:none;">
+    <div class="menu">
+      <h2>Despacho de Unidades</h2>
+      <button onclick="setMarkerType('rojo')">Bomberos / Paramédicos</button>
+<button onclick="setMarkerType('azul')">Policía</button>
+<button onclick="setMarkerType('amarillo')">Vialidad / Semovi</button>
+<button onclick="setMarkerType('controlPolicial')">Control Policial</button>
+<button onclick="setMarkerType('naranja')">Terrorismo</button>
+<button onclick="setMarkerType('negro')">Fiscalía</button>
+<button onclick="setMarkerType('trianguloRojo')">Desastre / Accidente</button>
+<button onclick="setMarkerType('circuloRojo')">Zona de Riesgo</button>
+<button onclick="setMarkerType('circuloNegro')">Zona Clausurada</button>
+<button onclick="setMarkerType('trianguloMorado')">Evacuación</button>
+<button onclick="setMarkerType('forestal')">Incendio Critico</button>
+    </div>
+    <div class="map-area" id="map">
+      <img src="https://i.imgur.com/Dxyeqnh.png" alt="Mapa" />
+      <div class="note-area" id="noteArea">
+        <button class="note-toggle" onclick="toggleNote()">📝 Notas / Apuntes</button>
+        <textarea placeholder="Notas o apuntes..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="infoModal">
+    <p><strong id="modalTitle">Información de llamada</strong></p>
+    <textarea id="infoText"></textarea>
+    <div class="modal-buttons">
+      <button onclick="saveAndCloseModal()">Guardar</button>
+      <button onclick="deleteMarker()">Borrar</button>
+    </div>
+  </div>
+
+  <script>
+    let currentMarkerType = null;
+    let pendingMarker = null;
+    let currentUser = null;
+
+    const loginModal = document.getElementById('loginModal');
+    const userInput = document.getElementById('userInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const mainContent = document.getElementById('mainContent');
+    const headerTitle = document.getElementById('headerTitle');
+    const modalTitle = document.getElementById('modalTitle');
+    const notesTextarea = document.querySelector('.note-area textarea');
+
+    userInput.addEventListener('input', () => {
+      loginBtn.disabled = userInput.value.trim() === '';
+    });
+
+    function loadNotes() {
+      if (!currentUser) return;
+      const saved = localStorage.getItem(`notes_${currentUser}`);
+      if (saved) {
+        notesTextarea.value = saved;
+      }
+    }
+
+    notesTextarea.addEventListener('input', () => {
+      if (!currentUser) return;
+      localStorage.setItem(`notes_${currentUser}`, notesTextarea.value);
+    });
+
+    function login() {
+      const user = userInput.value.trim();
+      if (!user) return;
+      currentUser = user;
+      headerTitle.textContent = `911 | C5 - CENTRAL CALL #${currentUser}`;
+      loginModal.style.display = 'none';
+      mainContent.style.display = 'flex';
+      document.body.style.overflow = 'auto';
+      loadNotes();
+    }
+
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !loginBtn.disabled) {
+        login();
+      }
+    });
+
+    loginBtn.addEventListener('click', login);
+
+    function setMarkerType(type) {
+      currentMarkerType = type;
+    }
+
+    document.getElementById('map').addEventListener('click', function(e) {
+      if (!currentMarkerType || !currentUser) return;
+
+      const map = this;
+      const marker = document.createElement('div');
+      marker.className = 'marker';
+
+      switch (currentMarkerType) {
+          case 'rojo': marker.style.background = 'red'; break;
+  case 'azul': marker.style.background = 'blue'; break;
+  case 'amarillo': marker.style.background = 'yellow'; break;
+  case 'naranja': marker.style.background = 'orange'; break;
+  case 'negro': marker.style.background = 'black'; break;
+
+  case 'trianguloRojo':
+    marker.style.width = '0';
+    marker.style.height = '0';
+    marker.style.borderLeft = '8px solid transparent';
+    marker.style.borderRight = '8px solid transparent';
+    marker.style.borderBottom = '16px solid red';
+    marker.style.borderRadius = '0';
+    break;
+
+  case 'trianguloMorado':
+    marker.style.width = '0';
+    marker.style.height = '0';
+    marker.style.borderLeft = '10px solid transparent';
+    marker.style.borderRight = '10px solid transparent';
+    marker.style.borderBottom = '20px solid purple';
+    marker.style.borderRadius = '0';
+    break;
+
+  case 'controlPolicial':
+    marker.style.width = '0';
+    marker.style.height = '0';
+    marker.style.borderLeft = '10px solid transparent';
+    marker.style.borderRight = '10px solid transparent';
+    marker.style.borderBottom = '20px solid blue';
+    marker.style.borderRadius = '0';
+    break;
+
+  case 'circuloRojo':
+    marker.style.width = '40px';
+    marker.style.height = '40px';
+    marker.style.border = '3px solid red';
+    marker.style.borderRadius = '50%';
+    marker.style.background = 'transparent';
+    break;
+
+  case 'circuloNegro':
+    marker.style.width = '60px';
+    marker.style.height = '60px';
+    marker.style.border = '3px solid black';
+    marker.style.borderRadius = '50%';
+    marker.style.background = 'transparent';
+    break;
+
+  case 'forestal':
+  marker.textContent = '🔥';
+  marker.style.fontSize = '24px';
+  marker.style.background = 'transparent';
+  marker.style.border = 'none';
+  marker.style.width = '24px';
+  marker.style.height = '24px';
+  marker.style.display = 'flex';
+  marker.style.alignItems = 'center';
+  marker.style.justifyContent = 'center';
+  marker.style.borderRadius = '0'; // para quitar el círculo
+  break;
+      }
+
+      const x = e.offsetX;
+      const y = e.offsetY;
+      marker.style.left = `${x - 20}px`;
+      marker.style.top = `${y - 20}px`;
+      marker.style.position = 'absolute';
+
+      marker.dataset.callId = currentUser;
+
+      marker.onclick = function(ev) {
+        ev.stopPropagation();
+        showModal(marker);
+      };
+
+      map.appendChild(marker);
+      currentMarkerType = null;
+
+      pendingMarker = marker;
+      showModal(marker);
+    });
+
+    function showModal(marker) {
+      modalTitle.textContent = `Información de llamada #${marker.dataset.callId}`;
+      const text = document.getElementById('infoText');
+      text.value = marker.dataset.info || '';
+      document.getElementById('infoModal').style.display = 'block';
+      pendingMarker = marker;
+    }
+
+    function saveAndCloseModal() {
+      const text = document.getElementById('infoText');
+      if (pendingMarker) {
+        pendingMarker.dataset.info = text.value;
+      }
+      document.getElementById('infoModal').style.display = 'none';
+      pendingMarker = null;
+    }
+
+    function deleteMarker() {
+      if (pendingMarker && pendingMarker.parentNode) {
+        pendingMarker.parentNode.removeChild(pendingMarker);
+      }
+      document.getElementById('infoModal').style.display = 'none';
+      pendingMarker = null;
+    }
+
+    function toggleNote() {
+      const noteArea = document.getElementById('noteArea');
+      noteArea.classList.toggle('collapsed');
+    }
+  </script>
+</body>
+</html>
